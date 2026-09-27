@@ -1,0 +1,52 @@
+<div id="quote-actions" class="quote-actions"
+     {% if oob %}hx-swap-oob="true"{% endif %}
+     data-quote-id="{{ quote.quote_id if quote else '' }}"
+     data-quote-text="{{ quote.quote_text if quote else '' }}"
+     data-author="{{ quote.author if quote else '' }}"
+     data-authenticated="{{ 'true' if current_user else 'false' }}">
+    <input type="hidden" id="excluded-ids" name="excluded_ids" value="">
+
+    <button type="button" class="btn btn-new-quote" id="new-quote-btn"
+            hx-post="/quote/new" hx-target="#quote-display" hx-swap="outerHTML"
+            hx-include="#excluded-ids">
+        New Quote
+    </button>
+
+    {% if current_user %}
+        <button type="button" class="btn btn-like"
+                {% if not quote or liked %}disabled{% endif %}
+                title="{{ 'Already liked' if liked else '' }}"
+                hx-post="/quote/{{ quote.quote_id if quote else 0 }}/like"
+                hx-target="#quote-display" hx-swap="outerHTML">
+            {{ 'Liked' if liked else 'Like' }}
+        </button>
+        <button type="button" class="btn btn-previous"
+                {% if not quote or quote.quote_id <= 1 %}disabled{% endif %}
+                hx-get="/quote/{{ (quote.quote_id - 1) if quote else 1 }}"
+                hx-target="#quote-display" hx-swap="outerHTML">
+            Previous
+        </button>
+        <button type="button" class="btn btn-next"
+                {% if not quote or quote.quote_id >= last_quote_id %}disabled{% endif %}
+                hx-get="/quote/{{ (quote.quote_id + 1) if quote else 1 }}"
+                hx-target="#quote-display" hx-swap="outerHTML">
+            Next
+        </button>
+        <button type="button" class="btn btn-first"
+                {% if last_quote_id < 1 %}disabled{% endif %}
+                hx-get="/quote/1" hx-target="#quote-display" hx-swap="outerHTML">
+            First
+        </button>
+        <button type="button" class="btn btn-last"
+                {% if last_quote_id < 1 %}disabled{% endif %}
+                hx-get="/quote/{{ last_quote_id }}" hx-target="#quote-display" hx-swap="outerHTML">
+            Last
+        </button>
+    {% else %}
+        <button type="button" class="btn btn-like" disabled title="Sign in to like quotes">Like</button>
+        <button type="button" class="btn btn-previous" id="anon-previous-btn" disabled>Previous</button>
+        <button type="button" class="btn btn-next" id="anon-next-btn" disabled>Next</button>
+        <button type="button" class="btn btn-first" id="anon-first-btn" disabled>First</button>
+        <button type="button" class="btn btn-last" id="anon-last-btn" disabled>Last</button>
+    {% endif %}
+</div>

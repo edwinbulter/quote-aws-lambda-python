@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars and adjust as needed. All values shown are the
+# same as the variables.tf defaults - only override what you need to change.
+
+aws_region   = "eu-central-1"
+aws_profile  = "" # e.g. "edwinbulter" to use a named AWS CLI profile
+
+project_name = "quote-aws-lambda-python"
+
+seed_users_enabled    = true
+session_cookie_secure = true

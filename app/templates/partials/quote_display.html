@@ -1,0 +1,8 @@
+<div id="quote-display" class="quote-display">
+    {% if quote %}
+        <p class="quote-text">&ldquo;{{ quote.quote_text }}&rdquo;</p>
+        <p class="quote-author">{{ quote.author }}</p>
+    {% else %}
+        <p class="quote-text">No quotes available right now.</p>
+    {% endif %}
+</div>

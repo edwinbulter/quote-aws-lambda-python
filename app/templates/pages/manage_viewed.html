@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Viewed Quotes{% endblock %}
+{% block content %}
+<div class="manage-screen">
+    <div class="manage-header">
+        <a class="back-button" href="/manage">&larr; Back</a>
+        <h2>Viewed Quotes</h2>
+        {% if quotes_with_like %}
+            <button type="button" class="btn btn-delete"
+                    hx-post="/viewed/delete-all"
+                    hx-confirm="This will permanently delete all your viewed quotes and liked quotes. Your next quote will start from the beginning (Quote #1). Continue?"
+                    hx-target="#viewed-table-container" hx-swap="outerHTML">
+                Delete All
+            </button>
+        {% endif %}
+    </div>
+    {% include "partials/viewed_table.html" %}
+</div>
+{% endblock %}

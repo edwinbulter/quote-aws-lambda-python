@@ -1,0 +1,51 @@
+<tr>
+    <td class="username-cell">
+        {{ user.username }}{% if user.username == current_username %} <span class="self-badge">(You)</span>{% endif %}
+    </td>
+    <td class="email-cell">{{ user.email }}</td>
+    <td class="role-cell">
+        {% if 'USER' in user.roles %}
+            <label class="role-toggle">
+                <input type="checkbox" checked
+                       hx-delete="/admin/users/{{ user.username }}/roles/USER"
+                       hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
+                &#10003; USER
+            </label>
+        {% else %}
+            <label class="role-toggle">
+                <input type="checkbox"
+                       hx-post="/admin/users/{{ user.username }}/roles/USER"
+                       hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
+                Add USER
+            </label>
+        {% endif %}
+    </td>
+    <td class="role-cell">
+        {% set is_self_admin = (user.username == current_username and 'ADMIN' in user.roles) %}
+        {% if 'ADMIN' in user.roles %}
+            <label class="role-toggle">
+                <input type="checkbox" checked
+                       {% if is_self_admin %}disabled title="Cannot remove yourself from ADMIN"{% endif %}
+                       hx-delete="/admin/users/{{ user.username }}/roles/ADMIN"
+                       hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
+                &#10003; ADMIN
+            </label>
+        {% else %}
+            <label class="role-toggle">
+                <input type="checkbox"
+                       hx-post="/admin/users/{{ user.username }}/roles/ADMIN"
+                       hx-target="closest tr" hx-swap="outerHTML" hx-trigger="change">
+                Add ADMIN
+            </label>
+        {% endif %}
+    </td>
+    <td class="actions-cell">
+        <button type="button" class="btn-delete"
+                {% if user.username == current_username %}disabled title="Cannot delete yourself"{% endif %}
+                hx-delete="/admin/users/{{ user.username }}"
+                hx-confirm="Delete user &quot;{{ user.username }}&quot; ({{ user.email }})? This cannot be undone - all their data will be permanently deleted."
+                hx-target="#admin-users-table-container" hx-swap="outerHTML">
+            Delete
+        </button>
+    </td>
+</tr>

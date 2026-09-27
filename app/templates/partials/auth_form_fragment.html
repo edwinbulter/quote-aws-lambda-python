@@ -1,0 +1,41 @@
+<div id="auth-form-container" class="auth-container">
+    <h2>{{ 'Register' if mode == 'register' else 'Login' }}</h2>
+
+    {% if notice %}<p class="notice">{{ notice }}</p>{% endif %}
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+    <form hx-post="{{ '/auth/register' if mode == 'register' else '/auth/login' }}"
+          hx-target="#auth-form-container" hx-swap="outerHTML">
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" value="{{ values.get('username', '') }}" required autofocus>
+        </div>
+        {% if mode == 'register' %}
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" value="{{ values.get('email', '') }}" required>
+            </div>
+        {% endif %}
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" required>
+        </div>
+        {% if mode == 'register' %}
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-submit">{{ 'Register' if mode == 'register' else 'Login' }}</button>
+    </form>
+
+    <p class="auth-switch">
+        {% if mode == 'register' %}
+            Already have an account?
+            <a href="#" hx-get="/auth/form?mode=login" hx-target="#auth-form-container" hx-swap="outerHTML">Login</a>
+        {% else %}
+            Don't have an account?
+            <a href="#" hx-get="/auth/form?mode=register" hx-target="#auth-form-container" hx-swap="outerHTML">Register</a>
+        {% endif %}
+    </p>
+</div>

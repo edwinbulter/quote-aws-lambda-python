@@ -1,0 +1,22 @@
+<div id="admin-users-table-container">
+    {% if users %}
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>USER Role</th>
+                    <th>ADMIN Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    {% include "partials/admin_user_row.html" %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">No users found.</div>
+    {% endif %}
+</div>

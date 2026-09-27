@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Register' if mode == 'register' else 'Login' }}{% endblock %}
+{% block content %}
+    {% include "partials/auth_form_fragment.html" %}
+{% endblock %}

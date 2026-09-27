@@ -1,0 +1,17 @@
+<div id="favourites-strip" class="favourites-strip" {% if oob %}hx-swap-oob="true"{% endif %}>
+    {% if current_user %}
+        <button type="button" class="btn btn-favourites"
+                hx-get="/favourites/strip" hx-target="#favourites-strip" hx-swap="outerHTML">
+            Favourite Quotes (Click to refresh)
+        </button>
+        <div class="message-box">
+            {% for q in quotes %}
+                <div class="message {{ 'message-even' if loop.index0 % 2 == 0 else 'message-odd' }}">
+                    {{ q.quote_text }} - {{ q.author }}
+                </div>
+            {% else %}
+                <div class="message-empty">No favourites yet. Like a quote to add one here.</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,21 @@
+<div id="viewed-table-container">
+    {% if quotes_with_like %}
+        <table class="viewed-quotes-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Quote</th>
+                    <th>Author</th>
+                    <th>Favourite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quote, is_liked in quotes_with_like %}
+                    {% include "partials/viewed_row.html" %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">No viewed quotes yet.</div>
+    {% endif %}
+</div>

@@ -1,0 +1,40 @@
+<div id="favourites-table-container">
+    {% if quotes %}
+        <table class="favourites-table">
+            <thead>
+                <tr>
+                    <th>Quote</th>
+                    <th>Author</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in quotes %}
+                    <tr>
+                        <td class="quote-cell">{{ q.quote_text }}</td>
+                        <td class="author-cell">{{ q.author }}</td>
+                        <td class="actions-cell">
+                            <button type="button"
+                                    hx-put="/favourites/{{ q.quote_id }}/reorder" hx-vals='{"direction": "up"}'
+                                    hx-target="#favourites-table-container" hx-swap="outerHTML"
+                                    {% if loop.first %}disabled{% endif %}
+                                    title="Move up">&#8593; Up</button>
+                            <button type="button"
+                                    hx-put="/favourites/{{ q.quote_id }}/reorder" hx-vals='{"direction": "down"}'
+                                    hx-target="#favourites-table-container" hx-swap="outerHTML"
+                                    {% if loop.last %}disabled{% endif %}
+                                    title="Move down">&#8595; Down</button>
+                            <button type="button" class="btn-delete"
+                                    hx-delete="/favourites/{{ q.quote_id }}"
+                                    hx-target="#favourites-table-container" hx-swap="outerHTML"
+                                    hx-confirm="Remove this favourite?"
+                                    title="Delete">&#128465; Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state">No favourites yet. Like quotes to add them here.</div>
+    {% endif %}
+</div>

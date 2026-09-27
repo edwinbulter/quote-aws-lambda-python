@@ -1,0 +1,113 @@
+<div id="quotes-management-container">
+    {% set id_next = 'desc' if (sort_by == 'id' and sort_order == 'asc') else 'asc' %}
+    {% set text_next = 'desc' if (sort_by == 'quotetext' and sort_order == 'asc') else 'asc' %}
+    {% set author_next = 'desc' if (sort_by == 'author' and sort_order == 'asc') else 'asc' %}
+
+    <div class="quote-count-section">
+        <div class="quote-stats">
+            <span class="quote-count">Total Quotes: {{ '{:,}'.format(total_count) }}</span>
+            <span class="quote-count">Total Likes: {{ '{:,}'.format(total_likes) }}</span>
+        </div>
+        <button type="button" class="btn btn-add-quotes"
+                hx-post="/admin/quotes/fetch-zen"
+                hx-target="#quotes-management-container" hx-swap="outerHTML">
+            Add Quotes from ZEN
+        </button>
+    </div>
+
+    <form id="quotes-filter-form" onsubmit="return false;">
+        <div class="search-section">
+            <input type="text" name="q" placeholder="Search by quote text..." value="{{ quote_text }}"
+                   class="search-input"
+                   hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                   hx-target="#quotes-management-container" hx-swap="outerHTML"
+                   hx-trigger="keyup changed delay:400ms" hx-vals='{"page": 1}' hx-push-url="true">
+            <input type="text" name="author" placeholder="Search by author..." value="{{ author }}"
+                   class="search-input"
+                   hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                   hx-target="#quotes-management-container" hx-swap="outerHTML"
+                   hx-trigger="keyup changed delay:400ms" hx-vals='{"page": 1}' hx-push-url="true">
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="sort_order" value="{{ sort_order }}">
+            <button type="button" class="clear-search-button"
+                    hx-get="/admin/quotes/table"
+                    hx-target="#quotes-management-container" hx-swap="outerHTML"
+                    hx-vals='{"q": "", "author": "", "page": 1, "sort_by": "id", "sort_order": "asc"}'>
+                Clear
+            </button>
+        </div>
+
+        {% if not quotes %}
+            <div class="empty-state-inline">No quotes found.</div>
+        {% else %}
+            <table class="quotes-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"sort_by": "id", "sort_order": "{{ id_next }}", "page": 1}'>
+                            ID {% if sort_by == 'id' %}{{ '↑' if sort_order == 'asc' else '↓' }}{% endif %}
+                        </th>
+                        <th class="sortable" hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"sort_by": "quotetext", "sort_order": "{{ text_next }}", "page": 1}'>
+                            Quote Text {% if sort_by == 'quotetext' %}{{ '↑' if sort_order == 'asc' else '↓' }}{% endif %}
+                        </th>
+                        <th class="sortable" hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"sort_by": "author", "sort_order": "{{ author_next }}", "page": 1}'>
+                            Author {% if sort_by == 'author' %}{{ '↑' if sort_order == 'asc' else '↓' }}{% endif %}
+                        </th>
+                        <th class="sortable" hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"sort_by": "likes", "sort_order": "desc", "page": 1}'>
+                            Likes {% if sort_by == 'likes' %}&#8595;{% endif %}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quote in quotes %}
+                        <tr>
+                            <td class="id-cell">{{ quote.quote_id }}</td>
+                            <td class="quote-text-cell">{{ quote.quote_text }}</td>
+                            <td class="author-cell">{{ quote.author }}</td>
+                            <td class="like-count-cell">{{ quote.like_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination-section">
+                <div class="page-size-selector">
+                    <label>Quotes per page:</label>
+                    <select name="page_size"
+                            hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"page": 1}'>
+                        {% for size in [10, 25, 50, 100, 250] %}
+                            <option value="{{ size }}" {{ 'selected' if page_size == size else '' }}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="pagination-controls">
+                    <button type="button"
+                            hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"page": {{ page - 1 }}}'
+                            {% if page <= 1 %}disabled{% endif %}>
+                        Previous
+                    </button>
+                    <span class="page-info">Page {{ page }} of {{ total_pages }}</span>
+                    <button type="button"
+                            hx-get="/admin/quotes/table" hx-include="#quotes-filter-form"
+                            hx-target="#quotes-management-container" hx-swap="outerHTML"
+                            hx-vals='{"page": {{ page + 1 }}}'
+                            {% if page >= total_pages %}disabled{% endif %}>
+                        Next
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+    </form>
+</div>

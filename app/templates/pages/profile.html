@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="profile">
+    <h2>User Profile</h2>
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Roles:</strong> {{ roles|join(', ') if roles else 'No roles assigned' }}</p>
+    </div>
+
+    <details class="profile-section">
+        <summary>Change password</summary>
+        <form hx-post="/auth/change-password" hx-target="#toast-container" hx-swap="none">
+            <div class="form-group">
+                <label>Current password</label>
+                <input type="password" name="current_password" required>
+            </div>
+            <div class="form-group">
+                <label>New password</label>
+                <input type="password" name="new_password" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm new password</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+            <button type="submit" class="btn btn-submit">Change Password</button>
+        </form>
+    </details>
+
+    <details class="profile-section">
+        <summary>Delete account</summary>
+        <form hx-post="/auth/unregister" hx-confirm="This will permanently delete your account and all your data. Continue?" hx-swap="none">
+            <div class="form-group">
+                <label>Confirm password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-delete">Delete My Account</button>
+        </form>
+    </details>
+
+    <div class="profile-actions">
+        <form hx-post="/auth/logout" hx-swap="none">
+            <button type="submit" class="btn btn-signin">Sign Out</button>
+        </form>
+        <a class="btn btn-cancel" href="/">Cancel</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<div class="manage-screen">
+    <div class="manage-header">
+        <a class="back-button" href="/manage">&larr; Back</a>
+        <h2>User Management</h2>
+    </div>
+    {% include "partials/admin_users_table.html" %}
+</div>
+{% endblock %}

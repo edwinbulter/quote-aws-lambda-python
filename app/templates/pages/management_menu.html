@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Manage{% endblock %}
+{% block content %}
+<div class="management-screen">
+    <h2>Manage</h2>
+    <div class="management-menu">
+        <a class="management-menu-item" href="/manage/favourites">My Favourites</a>
+        <a class="management-menu-item" href="/manage/viewed">My Viewed Quotes</a>
+        <a class="management-menu-item {{ 'disabled' if 'ADMIN' not in current_roles }}"
+           href="{{ '/manage/users' if 'ADMIN' in current_roles else '#' }}"
+           title="{{ '' if 'ADMIN' in current_roles else 'ADMIN role required' }}">
+            User Management
+        </a>
+        <a class="management-menu-item {{ 'disabled' if 'ADMIN' not in current_roles }}"
+           href="{{ '/manage/quotes' if 'ADMIN' in current_roles else '#' }}"
+           title="{{ '' if 'ADMIN' in current_roles else 'ADMIN role required' }}">
+            Manage Quotes
+        </a>
+    </div>
+    {% if 'ADMIN' not in current_roles %}
+        <p class="role-warning">ADMIN role required to access user and quote management.</p>
+    {% endif %}
+    <a class="btn btn-cancel" href="/">&larr; Back</a>
+</div>
+{% endblock %}

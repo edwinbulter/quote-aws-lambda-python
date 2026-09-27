@@ -1,0 +1,13 @@
+<tr>
+    <td class="id-cell">{{ quote.quote_id }}</td>
+    <td class="quote-cell">{{ quote.quote_text }}</td>
+    <td class="author-cell">{{ quote.author }}</td>
+    <td class="like-cell">
+        <button type="button" class="like-toggle-button {{ 'liked' if is_liked else '' }}"
+                hx-post="/viewed/{{ quote.quote_id }}/toggle-like"
+                hx-target="closest tr" hx-swap="outerHTML"
+                title="{{ 'Remove from favourites' if is_liked else 'Add to favourites' }}">
+            {{ '❤️ Liked' if is_liked else '\U0001F90D Like' }}
+        </button>
+    </td>
+</tr>
