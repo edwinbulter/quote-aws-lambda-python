@@ -24,6 +24,9 @@ verifiable auth.
   deploys, local dev, gotchas
 - [`doc/costs.md`](doc/costs.md) - expected AWS costs at low traffic
   volumes, and what would make them grow
+- [`doc/test-api.http`](doc/test-api.http) - manual route-by-route testing
+  (JetBrains HTTP Client / VS Code REST Client), env selector in
+  [`doc/http-client.env.json`](doc/http-client.env.json)
 - [`infrastructure/README.md`](infrastructure/README.md) - Terraform specifics
 
 ## Quick start

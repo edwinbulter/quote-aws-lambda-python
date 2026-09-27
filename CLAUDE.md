@@ -36,6 +36,15 @@ cd infrastructure && terraform fmt -recursive && terraform validate
 
 ## Gotchas
 
+- **`terraform plan`/`apply` fails with `filebase64sha256: no such file or
+  directory` on `build/lambda.zip`** if you skip
+  `scripts/build_lambda_package.sh` first - `aws_lambda_function` needs a
+  real zip to hash at plan/apply time, not just at first apply. Run the
+  build script (or `scripts/deploy_infra.sh`, which does it for you)
+  before every `terraform plan`/`apply` where the zip might be missing or
+  stale. The script uses `uv pip install --python-platform
+  aarch64-manylinux2014 ...` (not bare `pip`, which isn't guaranteed to
+  be on `PATH` and, even when present, may be an unrelated system Python).
 - **API Gateway throttling defaults to 0 if `default_route_settings` is
   ever removed from `infrastructure/api_gateway.tf`** - every request
   429s. `scripts/smoke_test.sh` has a burst-request regression check for

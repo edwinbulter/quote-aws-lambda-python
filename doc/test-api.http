@@ -1,0 +1,179 @@
+### quote-aws-lambda-python manual route testing
+###
+### This app is server-rendered (Jinja2 + HTMX) rather than a JSON REST API:
+### routes return HTML pages/fragments, and most bodies are form-encoded,
+### not JSON - same route surface as the quote-k8s-python source app this
+### project ports (see ../doc/architecture.md). The one thing that changed
+### under the hood: auth is now Cognito ID/refresh-token cookies
+### (`id_token`/`refresh_token`) instead of a Flask signed session cookie -
+### but from this file's point of view nothing changes. Your HTTP client
+### (JetBrains HTTP Client / VS Code REST Client) persists cookies
+### automatically within an environment, so once you run a login request
+### below, subsequent requests in this file are authenticated as that user -
+### no token capture/paste needed.
+###
+### Select an environment from doc/http-client.env.json before running:
+###   deployed  -> the real AWS deployment (API Gateway invoke URL)
+###   local-dev -> a local `uv run python wsgi.py` process (see ../doc/deployment.md
+###                for the AWS credentials + Cognito/DynamoDB env vars it needs)
+###
+### The "deployed" baseUrl is whatever `terraform -chdir=infrastructure
+### output -raw api_gateway_url` prints for your stack - update
+### doc/http-client.env.json if you've destroyed/recreated it since.
+
+### 0.0 Seed demo users (safe to rerun - skips users that already exist)
+POST {{baseUrl}}/seed-users
+
+### 0.1 Register a scratch user (for testing)
+POST {{baseUrl}}/auth/register
+Content-Type: application/x-www-form-urlencoded
+
+username=scratch-1&email=scratch-1@example.com&password=Password123!&confirm_password=Password123!
+
+### 0.2 Login as the seeded regular user (sets the id_token/refresh_token cookies for later requests)
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{username-user}}&password={{password-user}}
+
+### 0.3 Login as the seeded admin user (overwrites the cookies above)
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{username-admin}}&password={{password-admin}}
+
+### ============================================
+### PUBLIC / ANONYMOUS QUOTE BROWSING
+### ============================================
+
+### 1. Main quote view (full HTML page)
+GET {{baseUrl}}/
+
+### 2. New quote, anonymous (random, excluding already-seen ids)
+POST {{baseUrl}}/quote/new
+Content-Type: application/x-www-form-urlencoded
+
+excluded_ids=1,2,3
+
+### ============================================
+### AUTHENTICATED QUOTE BROWSING (run 0.2 or 0.3 first)
+### ============================================
+
+### 3. New quote, authenticated (sequential - advances user_progress)
+POST {{baseUrl}}/quote/new
+
+### 4. Re-fetch a specific quote by id (Previous/Next/First/Last; does not advance progress)
+GET {{baseUrl}}/quote/1
+
+### 5. Like quote 1 (idempotent)
+POST {{baseUrl}}/quote/1/like
+
+### 6. Unlike quote 1 (idempotent)
+DELETE {{baseUrl}}/quote/1/unlike
+
+### 7. Favourites quick-view strip fragment
+GET {{baseUrl}}/favourites/strip
+
+### ============================================
+### MANAGE FAVOURITES
+### ============================================
+
+### 8. Favourites table fragment
+GET {{baseUrl}}/favourites/table
+
+### 9. Like a couple of quotes to have something to reorder
+POST {{baseUrl}}/quote/2/like
+
+###
+POST {{baseUrl}}/quote/3/like
+
+### 10. Move quote 3 up one position
+PUT {{baseUrl}}/favourites/3/reorder
+Content-Type: application/x-www-form-urlencoded
+
+direction=up
+
+### 11. Remove quote 2 from favourites
+DELETE {{baseUrl}}/favourites/2
+
+### ============================================
+### MANAGE VIEWED QUOTES
+### ============================================
+
+### 12. Viewed Quotes page (full HTML page)
+GET {{baseUrl}}/manage/viewed
+
+### 13. Toggle like on quote 1 from the viewed-quotes row
+POST {{baseUrl}}/viewed/1/toggle-like
+
+### 14. Delete all viewed + liked quotes and reset progress to 0
+POST {{baseUrl}}/viewed/delete-all
+
+### ============================================
+### ADMIN: USER MANAGEMENT (run 0.3 first - ADMIN role required)
+### ============================================
+
+### 15. Users table fragment
+GET {{baseUrl}}/admin/users/table
+
+### 16. Grant ADMIN role to the scratch user (idempotent)
+POST {{baseUrl}}/admin/users/scratch-1/roles/ADMIN
+
+### 17. Revoke ADMIN role from the scratch user
+DELETE {{baseUrl}}/admin/users/scratch-1/roles/ADMIN
+
+### 18. Delete the scratch user (cascades likes/progress + removes the Cognito identity)
+DELETE {{baseUrl}}/admin/users/scratch-1
+
+### 19. Self-protection: admin cannot revoke their own ADMIN role
+DELETE {{baseUrl}}/admin/users/{{username-admin}}/roles/ADMIN
+
+### 20. Self-protection: admin cannot delete their own account
+DELETE {{baseUrl}}/admin/users/{{username-admin}}
+
+### ============================================
+### ADMIN: QUOTE MANAGEMENT (ADMIN role required)
+### ============================================
+
+### 21. Paginated/sorted/searched quotes table
+GET {{baseUrl}}/admin/quotes/table?page=1&page_size=10&sort_by=id&sort_order=asc
+
+### 22. Search by quote text and author
+GET {{baseUrl}}/admin/quotes/table?q=life&author=carnegie&page=1
+
+### 23. Sort by likes (descending-only)
+GET {{baseUrl}}/admin/quotes/table?sort_by=likes&sort_order=desc
+
+### 24. Force-fetch more quotes from ZenQuotes (dedup by text+author)
+POST {{baseUrl}}/admin/quotes/fetch-zen
+
+### ============================================
+### PERMISSION / ERROR TESTING
+### ============================================
+
+### 25. Login as the regular (non-admin) user, then rerun the admin requests above -
+###     they should return 403 with an inline error toast fragment.
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{username-user}}&password={{password-user}}
+
+### 26. Non-admin hitting an admin route -> 403
+GET {{baseUrl}}/admin/users/table
+
+### 27. Log out (clears the id_token/refresh_token cookies)
+POST {{baseUrl}}/auth/logout
+
+### 28. Login-required route without a session -> 302 redirect to /login
+###     (a real browser follows this automatically; an HTMX request instead
+###     gets an HX-Redirect response header - see app/auth/decorators.py)
+GET {{baseUrl}}/profile
+
+### 29. Login with a wrong password -> 401 with an inline error fragment
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username={{username-user}}&password=not-the-right-password
+
+### 30. Healthz (liveness probe target - a cheap DynamoDB GetItem, see app/health/routes.py)
+GET {{baseUrl}}/healthz

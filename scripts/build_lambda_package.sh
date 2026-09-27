@@ -9,17 +9,20 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 PYTHON_VERSION="3.12"
-PLATFORM="manylinux2014_aarch64" # matches infrastructure/variables.tf lambda_architecture default (arm64)
+PYTHON_PLATFORM="aarch64-manylinux2014" # matches infrastructure/variables.tf lambda_architecture default (arm64)
 
 rm -rf build
 mkdir -p build/package
 
-echo "Installing runtime dependencies for ${PLATFORM} / python${PYTHON_VERSION}..."
-# boto3 is preinstalled in the Lambda Python runtime - excluding it keeps
-# the zip small. Everything else the app imports at runtime must be here.
-pip install \
-  --platform "${PLATFORM}" \
-  --implementation cp \
+echo "Installing runtime dependencies for ${PYTHON_PLATFORM} / python${PYTHON_VERSION}..."
+# Uses `uv pip install` (this project's own toolchain, see pyproject.toml)
+# rather than a bare `pip`, which isn't guaranteed to be on PATH and, even
+# when present, is often a stray system/Xcode Python unrelated to this
+# project. boto3 is preinstalled in the Lambda Python runtime - excluding
+# it keeps the zip small. Everything else the app imports at runtime must
+# be here.
+uv pip install \
+  --python-platform "${PYTHON_PLATFORM}" \
   --python-version "${PYTHON_VERSION}" \
   --only-binary=:all: \
   --target build/package \
