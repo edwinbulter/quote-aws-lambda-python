@@ -17,17 +17,24 @@ environment.
 For the full architecture (what changed vs. the source app and why, the
 DynamoDB schema, the Cognito auth flow, deployment) see
 **`doc/architecture.md`**, **`doc/dynamodb-schema.md`**, **`doc/auth-flow.md`**,
-and **`doc/deployment.md`** - read the relevant one before making
-non-trivial changes.
+**`doc/deployment.md`**, and **`doc/e2e-testing.md`** (Playwright browser
+tests) - read the relevant one before making non-trivial changes.
 
 ## Commands
 
 ```bash
 uv sync                        # install dependencies
-uv run pytest                  # run tests (offline, via moto)
+uv run pytest                  # run tests (offline, via moto) - only tests/, not tests_e2e/
 uv run pytest --cov=app        # with coverage
 uv run ruff check .            # lint
 FLASK_CONFIG=dev uv run python wsgi.py   # local dev server (needs real AWS creds + Cognito/DynamoDB env vars - see doc/deployment.md)
+```
+
+```bash
+uv run playwright install chromium   # one-time, after `uv sync --group dev`
+uv run pytest tests_e2e/             # Playwright browser e2e tests (slow, opt-in) - see doc/e2e-testing.md
+uv run pytest tests_e2e/test_x.py -k y --headed --slowmo=1000   # step through visually
+PWDEBUG=1 uv run pytest tests_e2e/test_x.py -k y                 # Playwright Inspector
 ```
 
 ```bash
@@ -59,7 +66,25 @@ cd infrastructure && terraform fmt -recursive && terraform validate
 - **`POST /seed-users`** is an unauthenticated dev-only endpoint (gated by
   `SEED_USERS_ENABLED`, default on) that seeds `admin`/`Admin123!`
   (ADMIN) and `user-1`/`Hello-user-1` (USER) via Cognito Admin* calls.
-  Disable it for anything production-facing.
+  Disable it for anything production-facing. `tests_e2e/mock_server.py`
+  relies on this defaulting to on in `TestConfig`.
+- **`uv run pytest` only collects `tests/`** (`testpaths = ["tests"]` in
+  `pyproject.toml`) - `tests_e2e/` (Playwright) must be targeted
+  explicitly (`uv run pytest tests_e2e/`), see `doc/e2e-testing.md`.
+- **htmx's default `responseHandling` skips the swap entirely for any
+  4xx/5xx response** (including out-of-band toast swaps), which silently
+  swallowed this app's inline validation errors and error toasts (login
+  failure, registration errors, change-password errors, ...) - fixed by
+  an override in `app/static/js/app.js`. If a new error-returning route's
+  fragment isn't appearing in the browser, check that override is still
+  in place before assuming the route itself is broken.
+- **`hx-swap-oob="beforeend:#toast-container"` on the toast element
+  itself would discard the element's own tag/class**, keeping only its
+  text content (htmx's positional-selector OOB syntax inserts an
+  OOB-tagged element's *content*, not the element) - `partials/toast.html`
+  nests the styled `.toast` div one level inside a throwaway OOB wrapper
+  to work around this. Keep that nesting if you touch toast rendering, or
+  toasts go back to being unstyled text that never auto-dismisses.
 - **Two of `tests/test_auth.py`'s tests are `@pytest.mark.skip`'d**
   (duplicate-email registration, login-by-email) because moto's Cognito
   mock doesn't emulate the `AliasAttributes` pool mode this app actually

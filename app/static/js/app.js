@@ -1,6 +1,21 @@
 (function () {
     "use strict";
 
+    // ---- Error responses should still swap -----------------------------------
+    // htmx v2's built-in default responseHandling treats any 4xx/5xx response
+    // as a client-side error and skips the swap step entirely (including
+    // out-of-band toast swaps) - but several routes in this app deliberately
+    // return a non-2xx status *carrying a rendered fragment* with a
+    // user-facing error message (invalid login, registration/password-change
+    // validation failures, ...), meant to be swapped in exactly like a 2xx
+    // response. Without this override those fragments are fetched but never
+    // shown - the form/page just silently does nothing.
+    htmx.config.responseHandling = [
+        { code: "204", swap: false },
+        { code: "[23]..", swap: true },
+        { code: "[45]..", swap: true },
+    ];
+
     // ---- Toast auto-dismiss -------------------------------------------------
     // Toast fragments are appended out-of-band into #toast-container by any
     // htmx response (see partials/toast.html). Watch for new children and

@@ -1,3 +1,8 @@
-<div class="toast toast-{{ toast_type }}" hx-swap-oob="beforeend:#toast-container">
-    {{ message }}
+{# The outer div only carries hx-swap-oob's positional syntax, which inserts
+   its *content* at that position and discards the tagged element itself -
+   so the actually-styled/dismissible toast has to be one level in, or its
+   class and element-node-ness (needed by app.js's MutationObserver) are
+   lost. See app.js's toast auto-dismiss handler. #}
+<div hx-swap-oob="beforeend:#toast-container">
+    <div class="toast toast-{{ toast_type }}">{{ message }}</div>
 </div>
