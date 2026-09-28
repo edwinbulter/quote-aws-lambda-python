@@ -14,13 +14,28 @@ terraform apply
 (Or just run `scripts/deploy_infra.sh`, which does the build + init/plan/apply
 for you with a confirmation prompt.)
 
+`terraform apply` will pause for roughly 1-5 minutes on first run while
+ACM validates the DNS record for the custom domain
+(`infrastructure/domain.tf`) - this is expected, not a hang. That resource
+assumes a Route 53 public hosted zone named `kabulter.click` already
+exists in the same AWS account/region (`var.route53_zone_name`); if
+you're forking this project for your own domain, override
+`custom_domain_name`/`route53_zone_name` in `terraform.tfvars` first.
+
 After `apply`, bootstrap demo accounts and check everything works:
 
 ```bash
-API_URL=$(terraform -chdir=infrastructure output -raw api_gateway_url)
+API_URL=$(terraform -chdir=infrastructure output -raw custom_domain_url)
 curl -X POST "$API_URL/seed-users"     # creates admin/Admin123! (ADMIN) and user-1/Hello-user-1 (USER)
 ../scripts/smoke_test.sh "$API_URL"
 ```
+
+`custom_domain_url` (`infrastructure/domain.tf`) is the app's stable
+public URL - `terraform -chdir=infrastructure output -raw api_gateway_url`
+still works too and is useful for debugging API Gateway directly (e.g. to
+rule out DNS/ACM when something's wrong), but it embeds the API's
+internal ID and changes if that resource is ever recreated, so prefer the
+custom domain for anything you'd hand out or bookmark.
 
 ## Routine code changes
 

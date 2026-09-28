@@ -13,9 +13,10 @@ are what changed, because a Lambda can't host a local SQLite file and
 multiple concurrent Lambda instances need stateless, independently
 verifiable auth.
 
-**Live demo:** <https://v14g176ks3.execute-api.eu-central-1.amazonaws.com/>
-(a personal deployment of this project - no uptime guarantee, and it may
-be torn down/redeployed at any time, which changes the URL).
+**Live demo:** <https://quote-aws-lambda-python.kabulter.click/>
+(a personal deployment of this project - no uptime guarantee. The domain
+itself is stable even if the underlying API Gateway resource is ever
+recreated - see `infrastructure/domain.tf`).
 
 ## Docs
 

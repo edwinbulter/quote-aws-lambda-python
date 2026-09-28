@@ -21,3 +21,7 @@ infrastructure/crash.log
 .DS_Store
 .idea/
 .vscode/
+
+# Claude Code local runtime state (not project config - safe to ignore)
+.claude/scheduled_tasks.lock
+.claude/settings.local.json

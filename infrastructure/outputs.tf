@@ -42,3 +42,8 @@ output "cognito_user_pool_id" {
 output "cognito_user_pool_client_id" {
   value = aws_cognito_user_pool_client.web.id
 }
+
+output "custom_domain_url" {
+  description = "Public URL of the app on the custom domain."
+  value       = "https://${var.custom_domain_name}"
+}

@@ -85,3 +85,15 @@ variable "session_cookie_secure" {
   type        = bool
   default     = true
 }
+
+variable "custom_domain_name" {
+  description = "Custom domain the app is served at, in addition to the default execute-api URL."
+  type        = string
+  default     = "quote-aws-lambda-python.kabulter.click"
+}
+
+variable "route53_zone_name" {
+  description = "Existing Route 53 public hosted zone (managed outside this project) that custom_domain_name is a subdomain of."
+  type        = string
+  default     = "kabulter.click"
+}

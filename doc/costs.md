@@ -48,6 +48,7 @@ for requests actually made.
 | **CloudWatch Logs** (Lambda + API Gateway access logs, 30-day retention) | $0.50/GB ingestion, $0.03/GB-month storage | 5 GB ingestion+storage/month | ~100 invocations/day × a few KB of logs each ≈ 5-10 MB/month, ~0.1-0.2% of the free tier → **$0.00** |
 | **IAM** | n/a | n/a | Always free. **$0.00** |
 | **S3 + DynamoDB** (Terraform remote state, `infrastructure/backend.tf`) | Storage + request pricing | 5 GB S3 storage free | A few KB of state file, shared with your other Terraform-managed projects → **$0.00** incremental |
+| **Custom domain** (`infrastructure/domain.tf`: ACM cert, API Gateway domain name, Route 53 alias record) | ACM certs for regional API Gateway use are free; Route 53 alias records carry no per-query charge (unlike non-alias records) | n/a | The `kabulter.click` hosted zone already existed (paid for independently of this project, ~$0.50/month zone rental either way) → **$0.00** incremental |
 
 **Total: effectively $0/month during your account's first year (API
 Gateway's free tier covers everything), and well under $0.05/month after
@@ -86,7 +87,6 @@ paid features:
 |---|---|
 | Grow to ~10,000+ Monthly Active Users | Cognito starts charging $0.015/MAU above the free 10,000 |
 | Grow traffic ~300-1000x (to ~30,000-100,000 calls/day) | Still mostly inside free tiers; API Gateway becomes the first line item to actually show up on a bill, at low single-digit dollars/month |
-| Add a custom domain | Route 53 hosted zone (~$0.50/month) + ACM certificate (free) |
 | Enable Cognito Advanced Security Features (risk-based auth, compromised-credential checks) | Separate paid add-on, priced per MAU |
 | Put the Lambda in a VPC (e.g. to reach a private resource) | Reintroduces NAT Gateway cost (~$32-36/month fixed + data processing) unless you use VPC endpoints instead |
 | Add S3 + CloudFront for a separate static frontend | Small (~$0.01-1/month at this scale) but non-zero, and not currently part of this architecture (see `doc/architecture.md` - this Lambda serves its own HTML/HTMX directly) |

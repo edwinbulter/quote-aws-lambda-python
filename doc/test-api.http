@@ -13,13 +13,16 @@
 ### no token capture/paste needed.
 ###
 ### Select an environment from doc/http-client.env.json before running:
-###   deployed  -> the real AWS deployment (API Gateway invoke URL)
+###   deployed  -> the real AWS deployment, at its custom domain
+###                (https://quote-aws-lambda-python.kabulter.click - see
+###                infrastructure/domain.tf; stable across API Gateway
+###                resource recreation, unlike the raw execute-api URL)
 ###   local-dev -> a local `uv run python wsgi.py` process (see ../doc/deployment.md
 ###                for the AWS credentials + Cognito/DynamoDB env vars it needs)
 ###
-### The "deployed" baseUrl is whatever `terraform -chdir=infrastructure
-### output -raw api_gateway_url` prints for your stack - update
-### doc/http-client.env.json if you've destroyed/recreated it since.
+### If you ever point "deployed" at the raw execute-api URL instead (e.g.
+### to debug API Gateway directly, bypassing DNS/ACM), get it from
+### `terraform -chdir=infrastructure output -raw api_gateway_url`.
 
 ### 0.0 Seed demo users (safe to rerun - skips users that already exist)
 POST {{baseUrl}}/seed-users
