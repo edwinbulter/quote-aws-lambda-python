@@ -27,6 +27,8 @@ recreated - see `infrastructure/domain.tf`).
   the quote-id counter, transactional like-count consistency
 - [`doc/deployment.md`](doc/deployment.md) - first-time setup, routine
   deploys, local dev, gotchas
+- [`doc/e2e-testing.md`](doc/e2e-testing.md) - Playwright browser e2e
+  tests: setup, running, debugging
 - [`doc/costs.md`](doc/costs.md) - expected AWS costs at low traffic
   volumes, and what would make them grow
 - [`doc/test-api.http`](doc/test-api.http) - manual route-by-route testing
@@ -52,6 +54,15 @@ terraform init && terraform apply
 See [`doc/deployment.md`](doc/deployment.md) for the full walkthrough,
 including seeding demo accounts and the post-deploy smoke test.
 
+Python-based Playwright e2e tests (opt-in, not run by `uv run pytest`)
+also exist in `tests_e2e/` - see
+[`doc/e2e-testing.md`](doc/e2e-testing.md).
+
+```bash
+uv run playwright install chromium   # one-time, after `uv sync --group dev`
+uv run pytest tests_e2e/             # Playwright browser e2e tests
+```
+
 ## Layout
 
 ```
@@ -59,5 +70,6 @@ app/              Flask application (blueprints, DynamoDB repos, Cognito client,
 infrastructure/   Terraform: DynamoDB, Cognito, Lambda, API Gateway, IAM, CloudWatch
 scripts/          build/deploy/smoke-test scripts
 tests/            pytest suite (moto-mocked DynamoDB + Cognito)
+tests_e2e/        Playwright browser e2e tests (opt-in, see doc/e2e-testing.md)
 doc/              design docs
 ```
